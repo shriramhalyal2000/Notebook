@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+  mongo:
+    image: mongo:6-jammy
+    restart: unless-stopped
+    # Remove this ports entry if you don't need mongo accessible from the host.
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: "admin"
+      MONGO_INITDB_ROOT_PASSWORD: "passwd"
+      MONGO_INITDB_DATABASE: "notebook"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - app-network
+
+  backend:
+    image: shriram2105/notebook-backend
+    depends_on:
+      - mongo
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      # Backend must use credentials when Mongo requires auth:
+      MONGO_URI: mongodb://admin:passwd@mongo:27017/notebook?authSource=admin
+      JWT_SECRET: thisisthemostsecureserver
+    networks:
+      - app-network
+
+  frontend:
+    image: shriram2105/notebook-frontend
+    depends_on:
+      - backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    networks:
+      - app-network
+
+volumes:
+  mongo-data:
+
+networks:
+  app-network:
+    driver: bridge

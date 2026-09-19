@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-depl 
+  labels:
+    app: notebook
+    tier: frontend
+  nameSpace: notebook-app
+specs:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: notebook
+  template:
+    metadata:
+      labels:
+        app: notebook
+        tier: frontend
+    spec:
+      containers:
+        - name: notebook-frontend
+          image: shriram2105/notebook-frontend
+          ports:
+            - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadataa:
+  name: frontend-Service
+spec:
+  type: ClusterIP
+  selector:
+    app: notebook
+  ports:
+    - port: 80
+      targetPort: 3000
+      protocol: TCP
